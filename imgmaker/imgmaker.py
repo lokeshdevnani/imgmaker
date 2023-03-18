@@ -1,7 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from PIL import Image
-from jinja2 import Markup, Environment
+from jinja2 import Environment
+from jinja2.utils import markupsafe
 from markdown import markdown
 from base64 import b64encode
 import io
@@ -118,7 +119,7 @@ class imgmaker:
 def build_jinja_env():
     # https://stackoverflow.com/q/15555870
     def safe_markdown(text: str):
-        return Markup(markdown(text, extensions=["smarty"]))
+        return markupsafe.Markup(markdown(text, extensions=["smarty"]))
 
     def strip_markdown(text: str):
         """
