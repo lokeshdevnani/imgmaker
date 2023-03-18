@@ -13,6 +13,7 @@ import yaml
 from typing import List
 import pngquant
 import shutil
+import time
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -55,6 +56,7 @@ class imgmaker:
         output_file: str = "img.png",
         save_html: bool = False,
         use_pngquant: bool = False,
+        wait_time_in_seconds: int = 0,
     ):
 
         if use_pngquant:
@@ -97,13 +99,20 @@ class imgmaker:
             height = self.driver.find_element_by_tag_name("html").size["height"]
 
         self.driver.set_window_size(width, height)
+        
+        if wait_time_in_seconds:
+          time.sleep(wait_time_in_seconds)
 
-        if self.scale > 1 and downsample:
+        if self.scale > 1 or downsample:
             img = Image.open(io.BytesIO(self.driver.get_screenshot_as_png()))
             img = img.resize(
                 (int(img.size[0] / self.scale), int(img.size[1] / self.scale)),
                 Image.ANTIALIAS,
             )
+
+            if img.mode in ("RGBA", "P") and str(output_file).lower().endswith((".jpg", ".jpeg")):
+              img = img.convert("RGB")
+
             img.save(output_file)
         else:
             self.driver.get_screenshot_as_file(output_file)
