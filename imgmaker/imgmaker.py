@@ -21,10 +21,10 @@ logger.setLevel(logging.INFO)
 
 class imgmaker:
     def __init__(
-        self,
-        chromedriver_path: str = "./chromedriver",
-        scale: int = 2,
-        add_args: List[str] = [],
+            self,
+            chromedriver_path: str = "./chromedriver",
+            scale: int = 2,
+            add_args: List[str] = [],
     ):
         assert isinstance(scale, int), "scale must be an integer."
         self.scale = scale
@@ -33,11 +33,11 @@ class imgmaker:
         chrome_options = Options()
 
         args = [
-            "--headless",
-            "--hide-scrollbars",
-            "--disable-gpu",
-            f"--force-device-scale-factor={scale}",
-        ] + add_args
+                   "--headless",
+                   "--hide-scrollbars",
+                   "--disable-gpu",
+                   f"--force-device-scale-factor={scale}",
+               ] + add_args
 
         for arg in args:
             chrome_options.add_argument(arg)
@@ -47,22 +47,22 @@ class imgmaker:
         )
 
     def generate(
-        self,
-        template_path: str = "hero",
-        template_params: dict = {},
-        width: int = None,
-        height: int = None,
-        downsample: bool = True,
-        output_file: str = "img.png",
-        save_html: bool = False,
-        use_pngquant: bool = False,
-        wait_time_in_seconds: int = 0,
+            self,
+            template_path: str = "hero",
+            template_params: dict = {},
+            width: int = None,
+            height: int = None,
+            downsample: bool = True,
+            output_file: str = "img.png",
+            save_html: bool = False,
+            use_pngquant: bool = False,
+            wait_time_in_seconds: int = 0,
     ):
 
         if use_pngquant:
             assert shutil.which("pngquant"), (
-                "use_pngquant was set to True but pngquant is "
-                + "not installed on the system."
+                    "use_pngquant was set to True but pngquant is "
+                    + "not installed on the system."
             )
 
         if os.path.isfile(template_path):
@@ -89,19 +89,21 @@ class imgmaker:
             html = render_html_template(self.env, full_path, params)
 
         if save_html:
-            with open("rendered_html.html", "w", encoding="utf-8") as f:
+            render_filename = "rendered_html.html"
+            with open(render_filename, "w", encoding="utf-8") as f:
                 f.write(html)
-
-        self.driver.get(f"data:text/html;charset=utf-8,{html}")
+            self.driver.get(f"file://{os.path.abspath(render_filename)}")
+        else:
+            self.driver.get(f"data:text/html;charset=utf-8,{html}")
 
         if height is None or height == -1:
             self.driver.set_window_size(width, 1)
             height = self.driver.find_element_by_tag_name("html").size["height"]
 
         self.driver.set_window_size(width, height)
-        
+
         if wait_time_in_seconds:
-          time.sleep(wait_time_in_seconds)
+            time.sleep(wait_time_in_seconds)
 
         if self.scale > 1 or downsample:
             img = Image.open(io.BytesIO(self.driver.get_screenshot_as_png()))
@@ -111,7 +113,7 @@ class imgmaker:
             )
 
             if img.mode in ("RGBA", "P") and str(output_file).lower().endswith((".jpg", ".jpeg")):
-              img = img.convert("RGB")
+                img = img.convert("RGB")
 
             img.save(output_file)
         else:
